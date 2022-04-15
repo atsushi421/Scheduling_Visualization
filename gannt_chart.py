@@ -39,7 +39,7 @@ def main(source_file_path, dest_dir, highlight_deadline_miss):
     for i, task in enumerate(source_dict['taskSet']):
         # Select color
         if(highlight_deadline_miss):
-            if('deadlineMiss' in task.keys()):
+            if(task['deadlineMiss']):
                 color = 'red'
             else:
                 color = '#DCDCDC'
