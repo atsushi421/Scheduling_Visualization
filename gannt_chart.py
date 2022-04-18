@@ -5,7 +5,7 @@ import os
 import pandas as pd
 
 from bokeh.plotting import figure, output_file, save
-from bokeh.models import ColumnDataSource, Range1d, NumeralTickFormatter, Legend, LegendItem
+from bokeh.models import ColumnDataSource, Range1d, NumeralTickFormatter
 from bokeh.models.tools import HoverTool
 from bokeh.palettes import d3, grey
 
@@ -90,10 +90,12 @@ def main(source_file_path, dest_dir, highlight_deadline_miss):
                x_range=Range1d(0, 20),
                active_scroll='wheel_zoom',
                output_backend='svg')
+    p.xaxis.major_label_text_font_size = '20pt'  # HACK
+    p.yaxis.major_label_text_font_size = '20pt'  # HACK
     p.xaxis[0].formatter = NumeralTickFormatter(format='0,0')
     hover = HoverTool(tooltips="Task: @taskID<br> \
                                 Start: @Start<br> \
-                                End: @End")
+                                Finish: @End")
     p.add_tools(hover)
 
     yaxis_i = len(yaxis_list) - 1
