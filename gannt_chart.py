@@ -5,7 +5,7 @@ import os
 import pandas as pd
 
 from bokeh.plotting import figure, output_file, save
-from bokeh.models import ColumnDataSource, Range1d, NumeralTickFormatter
+from bokeh.models import ColumnDataSource, Range1d, NumeralTickFormatter, Legend, LegendItem
 from bokeh.models.tools import HoverTool
 from bokeh.palettes import d3, grey
 
@@ -24,9 +24,13 @@ def option_parser() -> str:
                             required=False,
                             action='store_true',
                             help='Highlight tasks in which deadline errors occurred')
+    arg_parser.add_argument('-l', '--draw_legend',
+                            required=False,
+                            action='store_true',
+                            help='Draw a legend for each task')
     args = arg_parser.parse_args()
 
-    return args.source_file_path, args.dest_dir, args.highlight_deadline_miss
+    return args.source_file_path, args.dest_dir, args.highlight_deadline_miss, args.draw_legend
 
 
 def get_taskID(id_str: str) -> int:  # HACK: jobID を分けて入力してもらう方式の方が良い．
@@ -55,7 +59,7 @@ def get_color_dict(source_dict: dict, highlight_deadline_miss: bool) -> dict:
     return color_dict
 
 
-def main(source_file_path, dest_dir, highlight_deadline_miss):
+def main(source_file_path, dest_dir, highlight_deadline_miss, draw_legend):
     # json -> df
     with open(source_file_path) as f:
         source_dict = json.load(f)
@@ -64,7 +68,7 @@ def main(source_file_path, dest_dir, highlight_deadline_miss):
 
     for i, task in enumerate(source_dict['taskSet']):
         # Select color
-        if(task['deadlineMiss']):
+        if(highlight_deadline_miss and task['deadlineMiss']):
             color = color_dict['deadlineMiss']
         else:
             color = color_dict[str(get_taskID(task['taskName']))]
@@ -98,22 +102,41 @@ def main(source_file_path, dest_dir, highlight_deadline_miss):
                                 Finish: @End")
     p.add_tools(hover)
 
-    yaxis_i = len(yaxis_list) - 1
-    for _, task_df in source_df.groupby(level=0):
-        source = ColumnDataSource(task_df.droplevel(0).reset_index())
-        p.quad(left='Start',
-               right='End',
-               bottom=yaxis_i+0.3,
-               top=yaxis_i+0.7,
-               source=source,
-               color='grey',
-               fill_color='Color')
-        yaxis_i -= 1
+    if(draw_legend):
+        yaxis_i = len(yaxis_list) - 1
+        for _, task_df in source_df.groupby(level=0):
+            for _, task_series in task_df.droplevel(0).reset_index().iterrows():
+                task_dict = task_series.to_dict()
+                task_dict = {k: [task_dict[k]] for k in task_dict.keys()}
+                source = ColumnDataSource(task_dict)
+                p.quad(left='Start',
+                    right='End',
+                    bottom=yaxis_i+0.3,
+                    top=yaxis_i+0.7,
+                    source=source,
+                    color='grey',
+                    fill_color='Color',
+                    legend_label=f"Task {get_taskID(task_dict['taskID'][0])+1}")
+            yaxis_i -= 1
+        p.legend.click_policy = 'hide'
+        p.add_layout(p.legend[0], 'right')
+    else:
+        yaxis_i = len(yaxis_list) - 1
+        for _, task_df in source_df.groupby(level=0):
+            source = ColumnDataSource(task_df.droplevel(0).reset_index())
+            p.quad(left='Start',
+                right='End',
+                bottom=yaxis_i+0.3,
+                top=yaxis_i+0.7,
+                source=source,
+                color='grey',
+                fill_color='Color')
+            yaxis_i -= 1
 
     output_file(f'{dest_dir}/{os.path.splitext(os.path.basename(source_file_path))[0]}.html')
     save(p)
 
 
 if __name__ == '__main__':
-    source_file_path, dest_dir, highlight_deadline_miss = option_parser()
-    main(source_file_path, dest_dir, highlight_deadline_miss)
+    source_file_path, dest_dir, highlight_deadline_miss, draw_legend = option_parser()
+    main(source_file_path, dest_dir, highlight_deadline_miss, draw_legend)
