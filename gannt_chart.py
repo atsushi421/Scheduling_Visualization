@@ -5,7 +5,7 @@ import os
 import pandas as pd
 
 from bokeh.plotting import figure, output_file, save
-from bokeh.models import ColumnDataSource, Range1d, NumeralTickFormatter, Legend, LegendItem
+from bokeh.models import ColumnDataSource, Range1d, NumeralTickFormatter, Arrow, NormalHead
 from bokeh.models.tools import HoverTool
 from bokeh.palettes import d3, grey
 
@@ -131,6 +131,7 @@ def main(source_file_path, dest_dir, highlight_deadline_miss, draw_legend):
                 source=source,
                 color='grey',
                 fill_color='Color')
+
             yaxis_i -= 1
 
     output_file(f'{dest_dir}/{os.path.splitext(os.path.basename(source_file_path))[0]}.html')
