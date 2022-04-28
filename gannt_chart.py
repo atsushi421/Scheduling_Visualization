@@ -4,10 +4,14 @@ import json
 import os
 import pandas as pd
 
-from bokeh.plotting import figure, output_file, save
-from bokeh.models import ColumnDataSource, Range1d, NumeralTickFormatter, Arrow, NormalHead
+from bokeh.plotting import figure, output_file, save, show
+from bokeh.models import ColumnDataSource, Range1d, NumeralTickFormatter, Arrow, NormalHead, OpenHead, VeeHead, TeeHead, Button
+from bokeh.events import ButtonClick
+from bokeh.models.callbacks import CustomJS
 from bokeh.models.tools import HoverTool
 from bokeh.palettes import d3, grey
+from bokeh.layouts import column
+from bokeh.io import curdoc
 
 
 def option_parser() -> str:
@@ -33,15 +37,11 @@ def option_parser() -> str:
     return args.source_file_path, args.dest_dir, args.highlight_deadline_miss, args.draw_legend
 
 
-def get_taskID(id_str: str) -> int:  # HACK: jobID を分けて入力してもらう方式の方が良い．
-    return int(id_str.split(',')[0])
-
-
 def get_color_dict(source_dict: dict, highlight_deadline_miss: bool) -> dict:
     # get taskIDs
     taskIDs = set()
     for task in source_dict['taskSet']:
-        taskIDs.add(get_taskID(task['taskName']))  # HACK: jobID を分けて入力してもらう方式の方が良い．
+        taskIDs.add(task['taskID'])
     taskIDs = sorted(list(taskIDs))
 
     # create color dict
@@ -59,11 +59,15 @@ def get_color_dict(source_dict: dict, highlight_deadline_miss: bool) -> dict:
     return color_dict
 
 
+
+    
+
+
 def main(source_file_path, dest_dir, highlight_deadline_miss, draw_legend):
     # json -> df
     with open(source_file_path) as f:
         source_dict = json.load(f)
-    source_df = pd.DataFrame(columns=['coreID', 'taskID', 'Start', 'End', 'Color'])
+    source_df = pd.DataFrame(columns=['coreID', 'taskID', 'jobID', 'Start', 'Finish', 'Preemption', 'Color'])
     color_dict = get_color_dict(source_dict, highlight_deadline_miss)
 
     for i, task in enumerate(source_dict['taskSet']):
@@ -71,12 +75,14 @@ def main(source_file_path, dest_dir, highlight_deadline_miss, draw_legend):
         if(highlight_deadline_miss and task['deadlineMiss']):
             color = color_dict['deadlineMiss']
         else:
-            color = color_dict[str(get_taskID(task['taskName']))]
+            color = color_dict[str(task['taskID'])]
         
         source_df.loc[i] = [int(task['coreID']),  # HACK: If type of coreID is not <int>
-                            str(task['taskName']),
+                            str(task['taskID']),
+                            str(task['jobID']),
                             task['startTime'],
-                            task['startTime']+task['executionTime'],
+                            task['finishTime'],
+                            task['preemption'],
                             color]
     source_df = source_df.set_index(["coreID", "taskID"])
     source_df = source_df.sort_index()
@@ -98,8 +104,9 @@ def main(source_file_path, dest_dir, highlight_deadline_miss, draw_legend):
     p.yaxis.major_label_text_font_size = '20pt'  # HACK
     p.xaxis[0].formatter = NumeralTickFormatter(format='0,0')
     hover = HoverTool(tooltips="Task: @taskID<br> \
+                                Job: @jobID<br>   \
                                 Start: @Start<br> \
-                                Finish: @End")
+                                Finish: @Finish")
     p.add_tools(hover)
 
     if(draw_legend):
@@ -110,22 +117,37 @@ def main(source_file_path, dest_dir, highlight_deadline_miss, draw_legend):
                 task_dict = {k: [task_dict[k]] for k in task_dict.keys()}
                 source = ColumnDataSource(task_dict)
                 p.quad(left='Start',
-                    right='End',
-                    bottom=yaxis_i+0.3,
-                    top=yaxis_i+0.7,
-                    source=source,
-                    color='grey',
-                    fill_color='Color',
-                    legend_label=f"Task {get_taskID(task_dict['taskID'][0])+1}")
+                       right='Finish',
+                       bottom=yaxis_i+0.3,
+                       top=yaxis_i+0.7,
+                       source=source,
+                       color='grey',
+                       fill_color='Color',
+                       legend_label=f"Task {task_dict['taskID'][0]}")
+                p.add_layout(Arrow(end=NormalHead(fill_color='black',
+                                                  line_width=1,
+                                                  size=10),
+                                   x_start=task_dict['Start'][0], y_start=yaxis_i+0.7,
+                                   x_end=task_dict['Start'][0], y_end=yaxis_i+0.9,))
+                if(task_dict['Preemption'][0]):
+                    p.add_layout(Arrow(end=TeeHead(line_color='red',
+                                                  line_width=2,
+                                                  size=10),
+                                       line_color='red',
+                                       line_width=2,
+                                       x_start=task_dict['Finish'][0], y_start=yaxis_i+0.3,
+                                       x_end=task_dict['Finish'][0], y_end=yaxis_i+0.1,))
             yaxis_i -= 1
+
         p.legend.click_policy = 'hide'
         p.add_layout(p.legend[0], 'right')
+
     else:
         yaxis_i = len(yaxis_list) - 1
         for _, task_df in source_df.groupby(level=0):
             source = ColumnDataSource(task_df.droplevel(0).reset_index())
             p.quad(left='Start',
-                right='End',
+                right='Finish',
                 bottom=yaxis_i+0.3,
                 top=yaxis_i+0.7,
                 source=source,
