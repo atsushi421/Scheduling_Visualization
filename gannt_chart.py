@@ -59,15 +59,11 @@ def get_color_dict(source_dict: dict, highlight_deadline_miss: bool) -> dict:
     return color_dict
 
 
-
-    
-
-
 def main(source_file_path, dest_dir, highlight_deadline_miss, draw_legend):
     # json -> df
     with open(source_file_path) as f:
         source_dict = json.load(f)
-    source_df = pd.DataFrame(columns=['coreID', 'taskID', 'jobID', 'Start', 'Finish', 'Preemption', 'Color'])
+    source_df = pd.DataFrame(columns=['coreID', 'taskID', 'jobID', 'Release', 'Deadline', 'Start', 'Finish', 'Preemption', 'Color'])
     color_dict = get_color_dict(source_dict, highlight_deadline_miss)
 
     for i, task in enumerate(source_dict['taskSet']):
@@ -80,6 +76,8 @@ def main(source_file_path, dest_dir, highlight_deadline_miss, draw_legend):
         source_df.loc[i] = [int(task['coreID']),  # HACK: If type of coreID is not <int>
                             str(task['taskID']),
                             str(task['jobID']),
+                            task['releaseTime'],
+                            task['deadline'],
                             task['startTime'],
                             task['finishTime'],
                             task['preemption'],
@@ -127,8 +125,13 @@ def main(source_file_path, dest_dir, highlight_deadline_miss, draw_legend):
                 p.add_layout(Arrow(end=NormalHead(fill_color='black',
                                                   line_width=1,
                                                   size=10),
-                                   x_start=task_dict['Start'][0], y_start=yaxis_i+0.7,
-                                   x_end=task_dict['Start'][0], y_end=yaxis_i+0.9,))
+                                   x_start=task_dict['Release'][0], y_start=yaxis_i+0.7,
+                                   x_end=task_dict['Release'][0], y_end=yaxis_i+1.0,))
+                p.add_layout(Arrow(end=NormalHead(fill_color='black',
+                                                  line_width=1,
+                                                  size=10),
+                                   x_start=task_dict['Deadline'][0], y_start=yaxis_i+1.0,
+                                   x_end=task_dict['Deadline'][0], y_end=yaxis_i+0.7,))
                 if(task_dict['Preemption'][0]):
                     p.add_layout(Arrow(end=TeeHead(line_color='red',
                                                   line_width=2,
