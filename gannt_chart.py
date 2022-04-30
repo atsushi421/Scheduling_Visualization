@@ -5,13 +5,38 @@ import os
 import pandas as pd
 
 from bokeh.plotting import figure, output_file, save, show
-from bokeh.models import ColumnDataSource, Range1d, NumeralTickFormatter, Arrow, NormalHead, OpenHead, VeeHead, TeeHead, Button
-from bokeh.events import ButtonClick
-from bokeh.models.callbacks import CustomJS
+from bokeh.models import (
+    ColumnDataSource,
+    Range1d,
+    NumeralTickFormatter,
+    Arrow,
+    NormalHead,
+    OpenHead,
+    VeeHead,
+    TeeHead
+)
 from bokeh.models.tools import HoverTool
 from bokeh.palettes import d3, grey
-from bokeh.layouts import column
-from bokeh.io import curdoc
+
+pattern = [
+    ' ',
+    '.',
+    'o',
+    '-',
+    '|',
+    '+',
+    '"',
+    ':',
+    '@',
+    '/',
+    '\\',
+    'x',
+    ',',
+    '`',
+    'v',
+    '>',
+    '*'
+]
 
 
 def option_parser() -> str:
@@ -60,10 +85,18 @@ def get_color_dict(source_dict: dict, highlight_deadline_miss: bool) -> dict:
 
 
 def main(source_file_path, dest_dir, highlight_deadline_miss, draw_legend):
-    # json -> df
+    ### json -> df
     with open(source_file_path) as f:
         source_dict = json.load(f)
-    source_df = pd.DataFrame(columns=['coreID', 'taskID', 'jobID', 'Release', 'Deadline', 'Start', 'Finish', 'Preemption', 'Color'])
+    source_df = pd.DataFrame(columns=['coreID',
+                                      'taskID',
+                                      'jobID',
+                                      'Release',
+                                      'Deadline',
+                                      'Start',
+                                      'Finish',
+                                      'Preemption',
+                                      'Color'])
     color_dict = get_color_dict(source_dict, highlight_deadline_miss)
 
     for i, task in enumerate(source_dict['taskSet']):
@@ -121,6 +154,9 @@ def main(source_file_path, dest_dir, highlight_deadline_miss, draw_legend):
                        source=source,
                        color='grey',
                        fill_color='Color',
+                       line_color='black',
+                       hatch_color='black',
+                       hatch_pattern=pattern[int(task_dict['taskID'][0]) % len(pattern)],
                        legend_label=f"Task {task_dict['taskID'][0]}")
                 p.add_layout(Arrow(end=NormalHead(fill_color='black',
                                                   line_width=1,
