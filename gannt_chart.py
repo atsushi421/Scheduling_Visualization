@@ -67,7 +67,7 @@ def option_parser() -> str:
 
 def get_color_dict(source_dict: dict, highlight_deadline_miss: bool, y_axis: str) -> dict:
     if(y_axis == "task"):
-        # get taskIDs
+        # get coreIDs
         coreIDs = set()
         for task in source_dict['taskSet']:
             coreIDs.add(task['taskID'])
@@ -87,22 +87,22 @@ def get_color_dict(source_dict: dict, highlight_deadline_miss: bool, y_axis: str
 
     elif(y_axis == "core"):
         # get taskIDs
-        coreIDs = set()
+        taskIDs = set()
         for task in source_dict['taskSet']:
-            coreIDs.add(task['coreID'])
-        coreIDs = sorted(list(coreIDs))
+            taskIDs.add(task['taskID'])
+        taskIDs = sorted(list(taskIDs))
 
         # create color dict
         color_dict = {}
         if(highlight_deadline_miss):
             color_dict['deadlineMiss'] = 'red'
-            greys = grey(len(coreIDs) + 2)
-            for coreID in coreIDs:
-                color_dict[str(coreID)] = greys[coreID + 1]
+            greys = grey(len(taskIDs) + 2)
+            for taskID in taskIDs:
+                color_dict[str(taskID)] = greys[taskID + 1]
         else:
             colors = d3['Category20'][20]
-            for coreID in coreIDs:
-                color_dict[str(coreID)] = colors[coreID % 19]
+            for taskID in taskIDs:
+                color_dict[str(taskID)] = colors[taskID % 19]
 
     return color_dict
 
@@ -182,24 +182,24 @@ def main(source_file_path, dest_dir, y_axis, highlight_deadline_miss, draw_legen
                         hatch_color='black',
                         hatch_pattern=pattern[int(task_dict['taskID'][0]) % len(pattern)],
                         legend_label=f"Task {task_dict['taskID'][0]}")
-                    p.add_layout(Arrow(end=NormalHead(fill_color='black',
-                                                    line_width=1,
-                                                    size=10),
-                                    x_start=task_dict['Release'][0], y_start=yaxis_i+0.7,
-                                    x_end=task_dict['Release'][0], y_end=yaxis_i+1.0,))
-                    p.add_layout(Arrow(end=NormalHead(fill_color='black',
-                                                    line_width=1,
-                                                    size=10),
-                                    x_start=task_dict['Deadline'][0], y_start=yaxis_i+1.0,
-                                    x_end=task_dict['Deadline'][0], y_end=yaxis_i+0.7,))
-                    if(task_dict['Preemption'][0]):
-                        p.add_layout(Arrow(end=TeeHead(line_color='red',
-                                                    line_width=2,
-                                                    size=10),
-                                        line_color='red',
-                                        line_width=2,
-                                        x_start=task_dict['Finish'][0], y_start=yaxis_i+0.3,
-                                        x_end=task_dict['Finish'][0], y_end=yaxis_i+0.1,))
+                    # p.add_layout(Arrow(end=NormalHead(fill_color='black',
+                    #                                 line_width=1,
+                    #                                 size=10),
+                    #                 x_start=task_dict['Release'][0], y_start=yaxis_i+0.7,
+                    #                 x_end=task_dict['Release'][0], y_end=yaxis_i+1.0,))
+                    # p.add_layout(Arrow(end=NormalHead(fill_color='black',
+                    #                                 line_width=1,
+                    #                                 size=10),
+                    #                 x_start=task_dict['Deadline'][0], y_start=yaxis_i+1.0,
+                    #                 x_end=task_dict['Deadline'][0], y_end=yaxis_i+0.7,))
+                    # if(task_dict['Preemption'][0]):
+                    #     p.add_layout(Arrow(end=TeeHead(line_color='red',
+                    #                                 line_width=2,
+                    #                                 size=10),
+                    #                     line_color='red',
+                    #                     line_width=2,
+                    #                     x_start=task_dict['Finish'][0], y_start=yaxis_i+0.3,
+                    #                     x_end=task_dict['Finish'][0], y_end=yaxis_i+0.1,))
                 yaxis_i -= 1
 
             p.legend.click_policy = 'hide'
