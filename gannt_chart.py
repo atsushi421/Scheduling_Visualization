@@ -1,9 +1,8 @@
 import argparse
 import json
 import os
-from typing import Dict
+from typing import Dict, List
 
-import pandas as pd
 from bokeh.models import (Arrow, ColumnDataSource, NormalHead,
                           NumeralTickFormatter, Range1d, TeeHead)
 from bokeh.models.tools import HoverTool
@@ -59,7 +58,7 @@ def option_parser():
     )
 
 
-class QuadStyleGetter():
+class QuadSourceGenerator():
     def __init__(
         self,
         source_dict: Dict,
@@ -89,23 +88,25 @@ class QuadStyleGetter():
             "*",
         ]
 
-        # get key_IDs
-        if y_axis == "core":
-            # get taskIDs
-            taskIDs = set()
-            for task in source_dict["taskSet"]:
-                taskIDs.add(task["taskID"])
-            key_IDs = sorted(list(taskIDs))
-        elif y_axis == "task":
-            # get coreIDs
-            coreIDs = set()
-            for task in source_dict["taskSet"]:
-                coreIDs.add(task["taskID"])
-            key_IDs = sorted(list(coreIDs))
+        # get coreIDs & taskIDs
+        taskIDs = set()
+        coreIDs = set()
+        for task in source_dict["taskSet"]:
+            taskIDs.add(task["taskID"])
+            coreIDs.add(task["coreID"])
+        self._taskIDs = sorted(list(taskIDs), reverse=True)
+        self._taskID_offset = self._taskIDs[-1]
+        self._coreIDs = sorted(list(coreIDs), reverse=True)
+        self._coreID_offset = self._coreIDs[-1]
+
+        # create color dict & pattern dict
+        if self._y_axis == "core":
+            key_IDs = self._taskIDs
+        elif self._y_axis == "task":
+            key_IDs = self._coreIDs
         else:
             raise NotImplementedError()
 
-        # create color dict
         self._color_dict = {}
         if highlight_deadline_miss:
             self._color_dict["deadlineMiss"] = "red"
@@ -117,13 +118,12 @@ class QuadStyleGetter():
             for key_ID in key_IDs:
                 self._color_dict[str(key_ID)] = colors[key_ID % 19]
 
-        # create pattern dict
         self._pattern_dict = {}
         for key_ID in key_IDs:
             self._pattern_dict[str(key_ID)] = \
                 self._all_pattern[key_ID % len(self._all_pattern)]
 
-    def get_color(self, sched_info: Dict) -> str:
+    def _get_color(self, sched_info: Dict) -> str:
         if(self._highlight_deadline_miss
            and sched_info["deadlineMiss"]):
             return self._color_dict["deadlineMiss"]
@@ -132,252 +132,146 @@ class QuadStyleGetter():
         elif self._y_axis == "task":
             return self._color_dict[str(sched_info["coreID"])]
 
-    def get_pattern(self, sched_info: Dict) -> str:
+    def get_y_axis_list(self) -> List[str]:
+        if self._y_axis == "core":
+            return [f"Core {coreID}" for coreID in self._coreIDs]
+        elif self._y_axis == "task":
+            return [f"Task {taskID}" for taskID in self._taskIDs]
+
+    def _get_y_base(self, sched_info: Dict) -> int:
+        if self._y_axis == "core":
+            y_base = (self._coreIDs[sched_info["coreID"]
+                                    - self._coreID_offset]
+                      - self._coreID_offset)
+        elif self._y_axis == "task":
+            y_base = (self._taskIDs[sched_info["taskID"]
+                                    - self._taskID_offset]
+                      - self._taskID_offset)
+
+        return y_base
+
+    def _get_pattern(self, sched_info: Dict) -> str:
         if self._y_axis == "core":
             return self._pattern_dict[str(sched_info["taskID"])]
         elif self._y_axis == "task":
             return self._pattern_dict[str(sched_info["coreID"])]
 
+    def _get_legend_label(self, sched_info: Dict) -> str:
+        if self._y_axis == "core":
+            return f'Task {sched_info["taskID"]}'
+        elif self._y_axis == "task":
+            return f'Core {sched_info["coreID"]}'
 
-def main(src_file_path, dest_dir, y_axis, highlight_deadline_miss, draw_legend):
+    def get_quad_source(self, sched_info: Dict) -> ColumnDataSource:
+        quad_source = ColumnDataSource(data={
+            "Left": [sched_info["startTime"]],
+            "Right": [sched_info["finishTime"]],
+            "Bottom": [self._get_y_base(sched_info) + 0.3],
+            "Top": [self._get_y_base(sched_info) + 0.7],
+            "Color": ["grey"],
+            "FillColor": [self._get_color(sched_info)],
+            "LineColor": ["black"],
+            "HatchColor": ["black"],
+            "HatchPattern": [self._get_pattern(sched_info)],
+            "LegendLabel": [self._get_legend_label(sched_info)],
+            "JobID": [f'Job {sched_info["jobID"]}']
+        })
+
+        return quad_source
+
+
+def main(
+    src_file_path,
+    dest_dir,
+    y_axis,
+    highlight_deadline_miss,
+    draw_legend
+) -> None:
     with open(src_file_path) as f:
         source_dict = json.load(f)
     # TODO: validate
 
-    quad_style_getter = QuadStyleGetter(source_dict,
-                                        highlight_deadline_miss,
-                                        y_axis)
+    quad_source_generater = QuadSourceGenerator(source_dict,
+                                                highlight_deadline_miss,
+                                                y_axis)
 
-    # create source_df
-    source_df = pd.DataFrame(
-        columns=[
-            "CoreID",
-            "TaskID",
-            "JobID",
-            "Release",
-            "Deadline",
-            "Start",
-            "Finish",
-            "Preemption",
-            "Color",
-            "Pattern"
-        ]
+    # preprocessing for plot
+    p = figure(
+        width=800,
+        height=400,
+        y_range=quad_source_generater.get_y_axis_list(),
+        x_range=Range1d(0, 20),  # HACK
+        active_scroll="wheel_zoom",
+        output_backend="svg",
     )
-    for i, sched_info in enumerate(source_dict["taskSet"]):
-        source_df.loc[i] = [
-            sched_info["coreID"],
-            sched_info["taskID"],
-            sched_info["jobID"],
-            sched_info["releaseTime"],
-            sched_info["deadline"],
-            sched_info["startTime"],
-            sched_info["finishTime"],
-            sched_info["preemption"],
-            quad_style_getter.get_color(sched_info),
-            quad_style_getter.get_pattern(sched_info)
-        ]
+    hover = HoverTool(
+        tooltips="@LegendLabel<br> \
+                  @JobID<br> \
+                  Start: @Left<br> \
+                  Finish: @Right"
+    )
+    p.xaxis.major_label_text_font_size = "20pt"  # HACK
+    p.yaxis.major_label_text_font_size = "20pt"  # HACK
+    p.xaxis[0].formatter = NumeralTickFormatter(format="0,0")
+    p.add_tools(hover)
 
-    if y_axis == "core":
-        source_df = source_df.set_index(["coreID", "taskID"])
-        source_df = source_df.sort_index()
-
-        # plot
-        yaxis_list = []
-        for yaxis in source_df.index.get_level_values(0).to_list():
-            if yaxis not in yaxis_list:
-                yaxis_list.append(yaxis)
-        yaxis_list.sort(reverse=True)
-        yaxis_list = ["Core " + str(y) for y in yaxis_list]
-
-        p = figure(
-            width=800,
-            height=400,
-            y_range=yaxis_list,
-            x_range=Range1d(0, 20),
-            active_scroll="wheel_zoom",
-            output_backend="svg",
+    # plot
+    for sched_info in source_dict["taskSet"]:
+        quad_source = quad_source_generater.get_quad_source(sched_info)
+        p.quad(
+            source=quad_source,
+            left="Left",
+            right="Right",
+            bottom="Bottom",
+            top="Top",
+            color="Color",
+            fill_color="FillColor",
+            line_color="LineColor",
+            hatch_color="HatchColor",
+            hatch_pattern="HatchPattern",
+            legend_label=f'{quad_source.data["LegendLabel"][0]}'
         )
-        p.xaxis.major_label_text_font_size = "20pt"  # HACK
-        p.yaxis.major_label_text_font_size = "20pt"  # HACK
-        p.xaxis[0].formatter = NumeralTickFormatter(format="0,0")
-        hover = HoverTool(
-            tooltips="Task: @taskID<br> \
-                      Job: @jobID<br>   \
-                      Start: @Start<br> \
-                      Finish: @Finish"
-        )
-        p.add_tools(hover)
 
-        if draw_legend:
-            yaxis_i = len(yaxis_list) - 1
-            for _, task_df in source_df.groupby(level=0):
-                for _, task_series in task_df.droplevel(0).reset_index().iterrows():
-                    task_dict = task_series.to_dict()
-                    task_dict = {k: [task_dict[k]] for k in task_dict.keys()}
-                    source = ColumnDataSource(task_dict)
-                    p.quad(
-                        left="Start",
-                        right="Finish",
-                        bottom=yaxis_i + 0.3,
-                        top=yaxis_i + 0.7,
-                        source=source,
-                        color="grey",
-                        fill_color="Color",
-                        line_color="black",
-                        hatch_color="black",
-                        hatch_pattern=all_pattern[
-                            int(task_dict["taskID"][0]) % len(all_pattern)
-                        ],
-                        legend_label=f"Task {task_dict['taskID'][0]}",
-                    )
-                    # p.add_layout(Arrow(end=NormalHead(fill_color='black',
-                    #                                 line_width=1,
-                    #                                 size=10),
-                    #                 x_start=task_dict['Release'][0], y_start=yaxis_i+0.7,
-                    #                 x_end=task_dict['Release'][0], y_end=yaxis_i+1.0,))
-                    # p.add_layout(Arrow(end=NormalHead(fill_color='black',
-                    #                                 line_width=1,
-                    #                                 size=10),
-                    #                 x_start=task_dict['Deadline'][0], y_start=yaxis_i+1.0,
-                    #                 x_end=task_dict['Deadline'][0], y_end=yaxis_i+0.7,))
-                    # if(task_dict['Preemption'][0]):
-                    #     p.add_layout(Arrow(end=TeeHead(line_color='red',
-                    #                                 line_width=2,
-                    #                                 size=10),
-                    #                     line_color='red',
-                    #                     line_width=2,
-                    #                     x_start=task_dict['Finish'][0], y_start=yaxis_i+0.3,
-                    #                     x_end=task_dict['Finish'][0], y_end=yaxis_i+0.1,))
-                yaxis_i -= 1
-
-            p.legend.click_policy = "hide"
-            p.add_layout(p.legend[0], "right")
-
-        else:
-            yaxis_i = len(yaxis_list) - 1
-            for _, task_df in source_df.groupby(level=0):
-                source = ColumnDataSource(task_df.droplevel(0).reset_index())
-                p.quad(
-                    left="Start",
-                    right="Finish",
-                    bottom=yaxis_i + 0.3,
-                    top=yaxis_i + 0.7,
-                    source=source,
-                    color="grey",
-                    fill_color="Color",
+        # plot other symbols
+        if y_axis == "task":
+            p.add_layout(
+                Arrow(
+                    end=NormalHead(fill_color="black",
+                                   line_width=1, size=10),
+                    x_start=sched_info["releaseTime"],
+                    y_start=sched_info["taskID"] + 0.7,
+                    x_end=sched_info["releaseTime"],
+                    y_end=sched_info["taskID"] + 1.0,
                 )
-                yaxis_i -= 1
-
-    elif y_axis == "task":
-        for i, sched_info in enumerate(source_dict["taskSet"]):
-            # Select color
-            if highlight_deadline_miss and sched_info["deadlineMiss"]:
-                color = self._color_dict["deadlineMiss"]
-            else:
-                color = self._color_dict[str(sched_info["coreID"])]
-
-            source_df.loc[i] = [
-                # HACK: If type of coreID is not <int>
-                int(sched_info["coreID"]),
-                int(sched_info["taskID"]),
-                str(sched_info["jobID"]),
-                sched_info["releaseTime"],
-                sched_info["deadline"],
-                sched_info["startTime"],
-                sched_info["finishTime"],
-                sched_info["preemption"],
-                color,
-            ]
-        source_df = source_df.set_index(["taskID", "jobID"])
-        source_df = source_df.sort_index()
-
-        # plot
-        yaxis_list = []
-        for yaxis in source_df.index.get_level_values(0).to_list():
-            if yaxis not in yaxis_list:
-                yaxis_list.append(yaxis)
-        yaxis_list.sort(reverse=True)
-        yaxis_list = ["Task " + str(y + 1) for y in yaxis_list]
-
-        p = figure(
-            width=800,
-            height=400,
-            y_range=yaxis_list,
-            x_range=Range1d(0, 20),
-            active_scroll="wheel_zoom",
-            output_backend="svg",
-        )
-        p.xaxis.major_label_text_font_size = "20pt"  # HACK
-        p.yaxis.major_label_text_font_size = "20pt"  # HACK
-        p.xaxis[0].formatter = NumeralTickFormatter(format="0,0")
-        hover = HoverTool(
-            tooltips="Core: @coreID<br> \
-                                    Job: @jobID<br>   \
-                                    Start: @Start<br> \
-                                    Finish: @Finish"
-        )
-        p.add_tools(hover)
-
-        if draw_legend:
-            yaxis_i = len(yaxis_list) - 1
-            for _, task_df in source_df.groupby(level=0):
-                for _, task_series in task_df.droplevel(0).reset_index().iterrows():
-                    task_dict = task_series.to_dict()
-                    task_dict = {k: [task_dict[k]] for k in task_dict.keys()}
-                    source = ColumnDataSource(task_dict)
-                    p.quad(
-                        left="Start",
-                        right="Finish",
-                        bottom=yaxis_i + 0.3,
-                        top=yaxis_i + 0.7,
-                        source=source,
-                        color="grey",
-                        fill_color="Color",
-                        line_color="black",
-                        hatch_color="black",
-                        hatch_pattern=all_pattern[
-                            int(task_dict["coreID"][0]) % len(all_pattern)
-                        ],
-                        legend_label=f"Core {task_dict['coreID'][0]}",
+            )
+            p.add_layout(
+                Arrow(
+                    end=NormalHead(fill_color="black",
+                                   line_width=1, size=10),
+                    x_start=sched_info["deadline"],
+                    y_start=sched_info["taskID"] + 1.0,
+                    x_end=sched_info["deadline"],
+                    y_end=sched_info["taskID"] + 0.7,
+                )
+            )
+            if sched_info.get("preemption"):
+                p.add_layout(
+                    Arrow(
+                        end=TeeHead(line_color="red",
+                                    line_width=2, size=10),
+                        line_color="red",
+                        line_width=2,
+                        x_start=sched_info["finishTime"],
+                        y_start=sched_info["taskID"] + 0.3,
+                        x_end=sched_info["finishTime"],
+                        y_end=sched_info["taskID"] + 0.1,
                     )
-                    p.add_layout(
-                        Arrow(
-                            end=NormalHead(fill_color="black",
-                                           line_width=1, size=10),
-                            x_start=task_dict["Release"][0],
-                            y_start=yaxis_i + 0.7,
-                            x_end=task_dict["Release"][0],
-                            y_end=yaxis_i + 1.0,
-                        )
-                    )
-                    p.add_layout(
-                        Arrow(
-                            end=NormalHead(fill_color="black",
-                                           line_width=1, size=10),
-                            x_start=task_dict["Deadline"][0],
-                            y_start=yaxis_i + 1.0,
-                            x_end=task_dict["Deadline"][0],
-                            y_end=yaxis_i + 0.7,
-                        )
-                    )
-                    if task_dict["Preemption"][0]:
-                        p.add_layout(
-                            Arrow(
-                                end=TeeHead(line_color="red",
-                                            line_width=2, size=10),
-                                line_color="red",
-                                line_width=2,
-                                x_start=task_dict["Finish"][0],
-                                y_start=yaxis_i + 0.3,
-                                x_end=task_dict["Finish"][0],
-                                y_end=yaxis_i + 0.1,
-                            )
-                        )
-                yaxis_i -= 1
+                )
 
-            p.legend.click_policy = "hide"
-            p.add_layout(p.legend[0], "right")
+    p.legend.click_policy = "hide"
+    p.add_layout(p.legend[0], "right")
 
+    # output
     output_file(
         f"{dest_dir}/{os.path.splitext(os.path.basename(src_file_path))[0]}.html"
     )
