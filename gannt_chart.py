@@ -131,18 +131,24 @@ class QuadSourceGenerator():
 
         return y_axis_list
 
+    def get_y_base(self, ID: int) -> int:
+        if self._y_axis == "core":
+            y_base = (self._coreIDs[ID - self._coreID_offset]
+                      - self._coreID_offset)
+        elif self._y_axis == "task":
+            y_base = (self._taskIDs[ID - self._taskID_offset]
+                      - self._taskID_offset)
+
+        return y_base
+
     def generate(self, sched_info: Dict) -> ColumnDataSource:
         if self._y_axis == "core":
-            y_base = (self._coreIDs[sched_info["coreID"]
-                                    - self._coreID_offset]
-                      - self._coreID_offset)
+            y_base = self.get_y_base(sched_info["coreID"])
             color = self._color_dict[str(sched_info["taskID"])]
             hatch_pattern = self._pattern_dict[str(sched_info["taskID"])]
             legend_label = f'Task {sched_info["taskID"]}'
         elif self._y_axis == "task":
-            y_base = (self._taskIDs[sched_info["taskID"]
-                                    - self._taskID_offset]
-                      - self._taskID_offset)
+            y_base = self.get_y_base(sched_info["taskID"])
             color = self._color_dict[str(sched_info["coreID"])]
             hatch_pattern = self._pattern_dict[str(sched_info["coreID"])]
             legend_label = f'Core {sched_info["coreID"]}'
@@ -225,34 +231,40 @@ def main(
             p.add_layout(
                 Arrow(
                     end=NormalHead(fill_color="black",
-                                   line_width=1, size=10),
+                                   line_width=1, size=6),
                     x_start=sched_info["releaseTime"],
-                    y_start=sched_info["taskID"] + 0.7,
+                    y_start=quad_source_generater.get_y_base(
+                        sched_info["taskID"]) + 0.7,
                     x_end=sched_info["releaseTime"],
-                    y_end=sched_info["taskID"] + 1.0,
+                    y_end=quad_source_generater.get_y_base(
+                        sched_info["taskID"]) + 1.0,
                 )
             )
             p.add_layout(
                 Arrow(
                     end=NormalHead(fill_color="black",
-                                   line_width=1, size=10),
+                                   line_width=1, size=6),
                     x_start=sched_info["deadline"],
-                    y_start=sched_info["taskID"] + 1.0,
+                    y_start=quad_source_generater.get_y_base(
+                        sched_info["taskID"]) + 1.0,
                     x_end=sched_info["deadline"],
-                    y_end=sched_info["taskID"] + 0.7,
+                    y_end=quad_source_generater.get_y_base(
+                        sched_info["taskID"]) + 0.7,
                 )
             )
             if sched_info.get("preemption"):
                 p.add_layout(
                     Arrow(
                         end=TeeHead(line_color="red",
-                                    line_width=2, size=10),
+                                    line_width=2, size=6),
                         line_color="red",
                         line_width=2,
                         x_start=sched_info["finishTime"],
-                        y_start=sched_info["taskID"] + 0.3,
+                        y_start=quad_source_generater.get_y_base(
+                            sched_info["taskID"]) + 0.7,
                         x_end=sched_info["finishTime"],
-                        y_end=sched_info["taskID"] + 0.1,
+                        y_end=quad_source_generater.get_y_base(
+                            sched_info["taskID"]) + 1.0,
                     )
                 )
 
