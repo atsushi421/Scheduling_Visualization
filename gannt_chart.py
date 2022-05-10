@@ -123,6 +123,12 @@ class QuadSourceGenerator():
             self._pattern_dict[str(key_ID)] = \
                 self._all_pattern[key_ID % len(self._all_pattern)]
 
+    def get_y_axis_list(self) -> List[str]:
+        if self._y_axis == "core":
+            return [f"Core {coreID}" for coreID in self._coreIDs]
+        elif self._y_axis == "task":
+            return [f"Task {taskID}" for taskID in self._taskIDs]
+
     def _get_color(self, sched_info: Dict) -> str:
         if(self._highlight_deadline_miss
            and sched_info["deadlineMiss"]):
@@ -131,12 +137,6 @@ class QuadSourceGenerator():
             return self._color_dict[str(sched_info["taskID"])]
         elif self._y_axis == "task":
             return self._color_dict[str(sched_info["coreID"])]
-
-    def get_y_axis_list(self) -> List[str]:
-        if self._y_axis == "core":
-            return [f"Core {coreID}" for coreID in self._coreIDs]
-        elif self._y_axis == "task":
-            return [f"Task {taskID}" for taskID in self._taskIDs]
 
     def _get_y_base(self, sched_info: Dict) -> int:
         if self._y_axis == "core":
@@ -162,7 +162,7 @@ class QuadSourceGenerator():
         elif self._y_axis == "task":
             return f'Core {sched_info["coreID"]}'
 
-    def get_quad_source(self, sched_info: Dict) -> ColumnDataSource:
+    def generate(self, sched_info: Dict) -> ColumnDataSource:
         quad_source = ColumnDataSource(data={
             "Left": [sched_info["startTime"]],
             "Right": [sched_info["finishTime"]],
@@ -217,7 +217,7 @@ def main(
 
     # plot
     for sched_info in source_dict["taskSet"]:
-        quad_source = quad_source_generater.get_quad_source(sched_info)
+        quad_source = quad_source_generater.generate(sched_info)
         p.quad(
             source=quad_source,
             left="Left",
