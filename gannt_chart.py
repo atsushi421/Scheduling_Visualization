@@ -125,56 +125,44 @@ class QuadSourceGenerator():
 
     def get_y_axis_list(self) -> List[str]:
         if self._y_axis == "core":
-            return [f"Core {coreID}" for coreID in self._coreIDs]
+            y_axis_list = [f"Core {coreID}" for coreID in self._coreIDs]
         elif self._y_axis == "task":
-            return [f"Task {taskID}" for taskID in self._taskIDs]
+            y_axis_list = [f"Task {taskID}" for taskID in self._taskIDs]
 
-    def _get_color(self, sched_info: Dict) -> str:
-        if(self._highlight_deadline_miss
-           and sched_info["deadlineMiss"]):
-            return self._color_dict["deadlineMiss"]
-        elif self._y_axis == "core":
-            return self._color_dict[str(sched_info["taskID"])]
-        elif self._y_axis == "task":
-            return self._color_dict[str(sched_info["coreID"])]
+        return y_axis_list
 
-    def _get_y_base(self, sched_info: Dict) -> int:
+    def generate(self, sched_info: Dict) -> ColumnDataSource:
         if self._y_axis == "core":
             y_base = (self._coreIDs[sched_info["coreID"]
                                     - self._coreID_offset]
                       - self._coreID_offset)
+            color = self._color_dict[str(sched_info["taskID"])]
+            hatch_pattern = self._pattern_dict[str(sched_info["taskID"])]
+            legend_label = f'Task {sched_info["taskID"]}'
         elif self._y_axis == "task":
             y_base = (self._taskIDs[sched_info["taskID"]
                                     - self._taskID_offset]
                       - self._taskID_offset)
+            color = self._color_dict[str(sched_info["coreID"])]
+            hatch_pattern = self._pattern_dict[str(sched_info["coreID"])]
+            legend_label = f'Core {sched_info["coreID"]}'
 
-        return y_base
+        if(self._highlight_deadline_miss
+           and sched_info["deadlineMiss"]):
+            color = self._color_dict["deadlineMiss"]
 
-    def _get_pattern(self, sched_info: Dict) -> str:
-        if self._y_axis == "core":
-            return self._pattern_dict[str(sched_info["taskID"])]
-        elif self._y_axis == "task":
-            return self._pattern_dict[str(sched_info["coreID"])]
-
-    def _get_legend_label(self, sched_info: Dict) -> str:
-        if self._y_axis == "core":
-            return f'Task {sched_info["taskID"]}'
-        elif self._y_axis == "task":
-            return f'Core {sched_info["coreID"]}'
-
-    def generate(self, sched_info: Dict) -> ColumnDataSource:
         quad_source = ColumnDataSource(data={
             "Left": [sched_info["startTime"]],
             "Right": [sched_info["finishTime"]],
-            "Bottom": [self._get_y_base(sched_info) + 0.3],
-            "Top": [self._get_y_base(sched_info) + 0.7],
+            "Bottom": [y_base + 0.3],
+            "Top": [y_base + 0.7],
             "Color": ["grey"],
-            "FillColor": [self._get_color(sched_info)],
+            "FillColor": [color],
             "LineColor": ["black"],
             "HatchColor": ["black"],
-            "HatchPattern": [self._get_pattern(sched_info)],
-            "LegendLabel": [self._get_legend_label(sched_info)],
-            "JobID": [f'Job {sched_info["jobID"]}']
+            "HatchPattern": [hatch_pattern],
+            "LegendLabel": [legend_label],
+            "JobID": [f'Job {sched_info["jobID"]}'],
         })
 
         return quad_source
@@ -273,12 +261,14 @@ def main(
 
     # output
     output_file(
-        f"{dest_dir}/{os.path.splitext(os.path.basename(src_file_path))[0]}.html"
+        f"{dest_dir}/"
+        f"{os.path.splitext(os.path.basename(src_file_path))[0]}.html"
     )
     save(p)
 
 
 if __name__ == "__main__":
-    src_file_path, dest_dir, y_axis, highlight_deadline_miss, draw_legend = option_parser()
+    (src_file_path, dest_dir, y_axis,
+     highlight_deadline_miss, draw_legend) = option_parser()
     main(src_file_path, dest_dir, y_axis,
          highlight_deadline_miss, draw_legend)
