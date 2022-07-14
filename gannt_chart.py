@@ -192,9 +192,8 @@ def main(
     # preprocessing for plot
     p = figure(
         width=800,
-        height=400,
         y_range=quad_source_generater.get_y_axis_list(),
-        x_range=Range1d(0, 20),  # HACK
+        x_range=Range1d(0, source_dict["makespan"]),
         active_scroll="wheel_zoom",
         output_backend="svg",
     )
@@ -204,6 +203,7 @@ def main(
                   Start: @Left<br> \
                   Finish: @Right"
     )
+    p.sizing_mode = 'stretch_both'
     p.xaxis.major_label_text_font_size = "20pt"  # HACK
     p.yaxis.major_label_text_font_size = "20pt"  # HACK
     p.xaxis[0].formatter = NumeralTickFormatter(format="0,0")
@@ -240,18 +240,19 @@ def main(
                         sched_info["taskID"]) + 1.0,
                 )
             )
-            p.add_layout(
-                Arrow(
-                    end=NormalHead(fill_color="black",
-                                   line_width=1, size=6),
-                    x_start=sched_info["deadline"],
-                    y_start=quad_source_generater.get_y_base(
-                        sched_info["taskID"]) + 1.0,
-                    x_end=sched_info["deadline"],
-                    y_end=quad_source_generater.get_y_base(
-                        sched_info["taskID"]) + 0.7,
+            if sched_info.get("deadline"):
+                p.add_layout(
+                    Arrow(
+                        end=NormalHead(fill_color="black",
+                                       line_width=1, size=6),
+                        x_start=sched_info["deadline"],
+                        y_start=quad_source_generater.get_y_base(
+                            sched_info["taskID"]) + 1.0,
+                        x_end=sched_info["deadline"],
+                        y_end=quad_source_generater.get_y_base(
+                            sched_info["taskID"]) + 0.7,
+                    )
                 )
-            )
             if sched_info.get("preemption"):
                 p.add_layout(
                     Arrow(
