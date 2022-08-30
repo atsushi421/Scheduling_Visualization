@@ -1,0 +1,232 @@
+{
+    "makespan": 15,
+    "taskSet": [
+        {
+            "coreID": 1,
+            "taskID": 1,
+            "jobID": 1,
+            "startTime": 0,
+            "finishTime": 1
+        },
+        {
+            "coreID": 2,
+            "taskID": 1,
+            "jobID": 3,
+            "releaseTime": 6,
+            "deadline": 9,
+            "startTime": 6,
+            "finishTime": 7,
+            "preemption": false,
+            "deadlineMiss": false
+        },
+        {
+            "coreID": 3,
+            "taskID": 1,
+            "jobID": 2,
+            "releaseTime": 3,
+            "deadline": 6,
+            "startTime": 3,
+            "finishTime": 4,
+            "preemption": false,
+            "deadlineMiss": false
+        },
+        {
+            "coreID": 3,
+            "taskID": 1,
+            "jobID": 4,
+            "releaseTime": 9,
+            "deadline": 12,
+            "startTime": 9,
+            "finishTime": 10,
+            "preemption": false,
+            "deadlineMiss": false
+        },
+        {
+            "coreID": 2,
+            "taskID": 1,
+            "jobID": 5,
+            "releaseTime": 12,
+            "deadline": 15,
+            "startTime": 12,
+            "finishTime": 13,
+            "preemption": false,
+            "deadlineMiss": false
+        },
+        {
+            "coreID": 2,
+            "taskID": 2,
+            "jobID": 1,
+            "releaseTime": 0,
+            "deadline": 4,
+            "startTime": 0,
+            "finishTime": 2,
+            "preemption": false,
+            "deadlineMiss": false
+        },
+        {
+            "coreID": 3,
+            "taskID": 2,
+            "jobID": 2,
+            "releaseTime": 4,
+            "deadline": 8,
+            "startTime": 4,
+            "finishTime": 6,
+            "preemption": false,
+            "deadlineMiss": false
+        },
+        {
+            "coreID": 1,
+            "taskID": 2,
+            "jobID": 3,
+            "releaseTime": 8,
+            "deadline": 12,
+            "startTime": 8,
+            "finishTime": 10,
+            "preemption": false,
+            "deadlineMiss": false
+        },
+        {
+            "coreID": 3,
+            "taskID": 2,
+            "jobID": 4,
+            "releaseTime": 12,
+            "deadline": 16,
+            "startTime": 12,
+            "finishTime": 14,
+            "preemption": false,
+            "deadlineMiss": false
+        },
+        {
+            "coreID": 3,
+            "taskID": 3,
+            "jobID": 1,
+            "releaseTime": 0,
+            "deadline": 5,
+            "startTime": 0,
+            "finishTime": 3,
+            "preemption": false,
+            "deadlineMiss": false
+        },
+        {
+            "coreID": 1,
+            "taskID": 3,
+            "jobID": 2,
+            "releaseTime": 5,
+            "deadline": 10,
+            "startTime": 5,
+            "finishTime": 8,
+            "preemption": false,
+            "deadlineMiss": false
+        },
+        {
+            "coreID": 1,
+            "taskID": 3,
+            "jobID": 3,
+            "releaseTime": 10,
+            "deadline": 15,
+            "startTime": 10,
+            "finishTime": 13,
+            "preemption": false,
+            "deadlineMiss": false
+        },
+        {
+            "coreID": 1,
+            "taskID": 4,
+            "jobID": 1,
+            "releaseTime": 0,
+            "deadline": 6,
+            "startTime": 1,
+            "finishTime": 5,
+            "preemption": false,
+            "deadlineMiss": false
+        },
+        {
+            "coreID": 2,
+            "taskID": 4,
+            "jobID": 2,
+            "releaseTime": 6,
+            "deadline": 12,
+            "startTime": 8,
+            "finishTime": 12,
+            "preemption": false,
+            "deadlineMiss": false
+        },
+        {
+            "coreID": 1,
+            "taskID": 4,
+            "jobID": 3,
+            "releaseTime": 12,
+            "deadline": 18,
+            "startTime": 13,
+            "finishTime": 15,
+            "preemption": false,
+            "deadlineMiss": false
+        },
+        {
+            "coreID": 2,
+            "taskID": 5,
+            "jobID": 1,
+            "releaseTime": 0,
+            "deadline": 8,
+            "startTime": 2,
+            "finishTime": 6,
+            "preemption": false,
+            "deadlineMiss": false
+        },
+        {
+            "coreID": 3,
+            "taskID": 5,
+            "jobID": 2,
+            "releaseTime": 8,
+            "deadline": 16,
+            "startTime": 8,
+            "finishTime": 9,
+            "preemption": true,
+            "deadlineMiss": false
+        },
+        {
+            "coreID": 3,
+            "taskID": 5,
+            "jobID": 2,
+            "releaseTime": 8,
+            "deadline": 16,
+            "startTime": 10,
+            "finishTime": 12,
+            "preemption": true,
+            "deadlineMiss": false
+        },
+        {
+            "coreID": 2,
+            "taskID": 5,
+            "jobID": 2,
+            "releaseTime": 8,
+            "deadline": 16,
+            "startTime": 13,
+            "finishTime": 14,
+            "preemption": false,
+            "deadlineMiss": false
+        },
+        {
+            "coreID": 2,
+            "taskID": 6,
+            "jobID": 1,
+            "releaseTime": 0,
+            "deadline": 12,
+            "startTime": 14,
+            "finishTime": 15,
+            "preemption": false,
+            "deadlineMiss": true
+        },
+        {
+            "coreID": 3,
+            "taskID": 6,
+            "jobID": 1,
+            "releaseTime": 0,
+            "deadline": 12,
+            "startTime": 6,
+            "finishTime": 8,
+            "preemption": true,
+            "deadlineMiss": false
+        }
+    ]
+}

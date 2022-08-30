@@ -129,6 +129,4 @@ dmypy.json
 .pyre/
 
 # Add
-sample.json
-sample.html
 .vscode/
