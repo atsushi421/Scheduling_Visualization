@@ -7,7 +7,7 @@
 
 ## Setup Flow
 ```
-git clone https://github.com/atsushi421/PaperErrorChecker.git
+git clone https://github.com/atsushi421/Scheduling_Visualization.git
 cd Scheduling_Visualization
 ./setup.bash
 ```
