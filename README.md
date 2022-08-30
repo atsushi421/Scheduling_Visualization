@@ -1,7 +1,15 @@
 # Scheduling_Visualization
 
 ## Overview
-スケジューリング結果の可視化ツールです。以下に出力例を示します。
+スケジューリング結果の可視化ツールです。
+以下の便利な機能があります。
+- グラフの拡大・縮小
+- 出力グラフの凡例をクリックすることで、その描画オブジェクトを表示・非表示できる
+- デッドラインミス発生個所のハイライト
+- リリース・相対デッドライン・プリエンプションの時刻可視化
+- 図のベクタ形式での保存
+
+以下に出力例を示します。
 
 <img src="https://user-images.githubusercontent.com/55824710/187318197-64a59624-1ea5-449b-96b7-2696d722597d.svg" width="50%"><img src="https://user-images.githubusercontent.com/55824710/187318194-322aedb0-82fb-478d-8d0d-d0f64612547b.svg" width="50%">
 
