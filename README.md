@@ -28,7 +28,6 @@ optional arguments:
                         y_axis. ["core", "task"]
   -hdm, --highlight_deadline_miss
                         Highlight tasks in which deadline misses occurred
-  -l, --draw_legend     Draw a legend for each task
 ```
 
 ### Input JSON format
