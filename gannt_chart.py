@@ -228,18 +228,19 @@ def main(
 
         # plot other symbols
         if y_axis == "task":
-            p.add_layout(
-                Arrow(
-                    end=NormalHead(fill_color="black",
-                                   line_width=1, size=6),
-                    x_start=sched_info["releaseTime"],
-                    y_start=quad_source_generater.get_y_base(
-                        sched_info["taskID"]) + 0.7,
-                    x_end=sched_info["releaseTime"],
-                    y_end=quad_source_generater.get_y_base(
-                        sched_info["taskID"]) + 1.0,
+            if sched_info.get("releaseTime"):
+                p.add_layout(
+                    Arrow(
+                        end=NormalHead(fill_color="black",
+                                       line_width=1, size=6),
+                        x_start=sched_info["releaseTime"],
+                        y_start=quad_source_generater.get_y_base(
+                            sched_info["taskID"]) + 0.7,
+                        x_end=sched_info["releaseTime"],
+                        y_end=quad_source_generater.get_y_base(
+                            sched_info["taskID"]) + 1.0,
+                    )
                 )
-            )
             if sched_info.get("deadline"):
                 p.add_layout(
                     Arrow(
