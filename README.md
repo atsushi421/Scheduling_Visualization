@@ -31,6 +31,9 @@ optional arguments:
 ```
 
 ### Input JSON format
+入力として、以下のフォーマットのJSONファイルを用意してください。
+`./sample_inputs/sample.json` にサンプルファイルがあります。
+
 ```
 {
     "makespan": [int],
@@ -46,7 +49,7 @@ optional arguments:
             "preemption": [bool],  // optional
             "deadlineMiss": [bool]  // optional
         },
-    ...
+        ...
     ]
 }
 ```
