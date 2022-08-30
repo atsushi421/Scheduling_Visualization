@@ -40,13 +40,13 @@ def option_parser():
         action="store_true",
         help="Highlight tasks in which deadline misses occurred",
     )
-    arg_parser.add_argument(
-        "-l",
-        "--draw_legend",
-        required=False,
-        action="store_true",
-        help="Draw a legend for each task",
-    )
+    # arg_parser.add_argument(
+    #     "-l",
+    #     "--draw_legend",
+    #     required=False,
+    #     action="store_true",
+    #     help="Draw a legend for each task",
+    # )
     args = arg_parser.parse_args()
 
     return (
@@ -54,7 +54,7 @@ def option_parser():
         args.dest_dir,
         args.y_axis,
         args.highlight_deadline_miss,
-        args.draw_legend,
+        # args.draw_legend,
     )
 
 
@@ -180,8 +180,7 @@ def main(
     src_file_path,
     dest_dir,
     y_axis,
-    highlight_deadline_miss,
-    draw_legend
+    highlight_deadline_miss
 ) -> None:
     with open(src_file_path) as f:
         source_dict = json.load(f)
@@ -285,6 +284,6 @@ def main(
 
 if __name__ == "__main__":
     (src_file_path, dest_dir, y_axis,
-     highlight_deadline_miss, draw_legend) = option_parser()
+     highlight_deadline_miss) = option_parser()
     main(src_file_path, dest_dir, y_axis,
-         highlight_deadline_miss, draw_legend)
+         highlight_deadline_miss)
