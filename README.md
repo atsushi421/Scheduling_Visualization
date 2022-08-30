@@ -39,7 +39,7 @@ optional arguments:
         {
             "coreID": [int],
             "taskID": [int],
-            "jobID": [int],
+            "jobID": [int],  // optional
             "releaseTime": [int],  // optional
             "deadline": [int],  // optional
             "startTime": [int],
@@ -54,4 +54,3 @@ optional arguments:
 - `// optional` と書かれている項目は記述されていなくても OK
 - "releaseTime", "deadline", "preemption" は、`--y_axis task` とした場合に、各ジョブに対して描画される
 - `"deadlineMiss": True` とした場合、`--highlight_deadline_miss` オプションを使用すると、そのジョブが赤色に描画される
-- マルチレートDAGスケジューリングを前提としているため、jobID の入力が必須になっている。シングルレートDAGのスケジューリング結果を可視化したい場合は、jobID に適当な数字を入れてください（例えば 0）
