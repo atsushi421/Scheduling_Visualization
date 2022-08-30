@@ -5,8 +5,12 @@
             "coreID": 1,
             "taskID": 1,
             "jobID": 1,
+            "releaseTime": 0,
+            "deadline": 3,
             "startTime": 0,
-            "finishTime": 1
+            "finishTime": 1,
+            "preemption": false,
+            "deadlineMiss": false
         },
         {
             "coreID": 2,

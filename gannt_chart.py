@@ -157,7 +157,7 @@ class QuadSourceGenerator():
            and sched_info["deadlineMiss"]):
             color = self._color_dict["deadlineMiss"]
 
-        quad_source = ColumnDataSource(data={
+        quad_source_dict = {
             "Left": [sched_info["startTime"]],
             "Right": [sched_info["finishTime"]],
             "Bottom": [y_base + 0.3],
@@ -168,10 +168,12 @@ class QuadSourceGenerator():
             "HatchColor": ["black"],
             "HatchPattern": [hatch_pattern],
             "LegendLabel": [legend_label],
-            "JobID": [f'Job {sched_info["jobID"]}'],
-        })
+        }
 
-        return quad_source
+        if sched_info.get("jobID"):
+            quad_source_dict["JobID"] = [f'Job {sched_info["jobID"]}']
+
+        return ColumnDataSource(data=quad_source_dict)
 
 
 def main(
@@ -228,7 +230,7 @@ def main(
 
         # plot other symbols
         if y_axis == "task":
-            if sched_info.get("releaseTime"):
+            if isinstance(sched_info.get("releaseTime"), int):
                 p.add_layout(
                     Arrow(
                         end=NormalHead(fill_color="black",
