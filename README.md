@@ -64,3 +64,6 @@ optional arguments:
 - `// optional` と書かれている項目は記述されていなくても OK
 - "releaseTime", "deadline", "preemption" は、`--y_axis task` とした場合に、各ジョブに対して描画される
 - `"deadlineMiss": True` とした場合、`--highlight_deadline_miss` オプションを使用すると、そのジョブが赤色に描画される
+
+### NOTE
+出力結果の図を表示するウィンドウサイズによっては、画面がちらつくことがあります。その際はフルスクリーンにすれば問題なく表示できます。
