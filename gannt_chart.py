@@ -47,15 +47,6 @@ def option_parser():
     #     action="store_true",
     #     help="Draw a legend for each task",
     # )
-    arg_parser.add_argument(
-        "-sm",
-        "--sizing_mode",
-        default="fixed",
-        required=False,
-        type=str,
-        help="Set sizing mode. ['fixed', 'scale_width', 'scale_height', 'scale_both',"
-             "'stretch_both', 'stretch_width', 'stretch_height']",
-    )
     args = arg_parser.parse_args()
 
     return (
@@ -64,7 +55,6 @@ def option_parser():
         args.y_axis,
         args.highlight_deadline_miss,
         # args.draw_legend,
-        args.sizing_mode,
     )
 
 
@@ -191,7 +181,6 @@ def main(
     dest_dir,
     y_axis,
     highlight_deadline_miss,
-    sizing_mode
 ) -> None:
     with open(src_file_path) as f:
         source_dict = json.load(f)
@@ -215,7 +204,7 @@ def main(
                   Start: @Left<br> \
                   Finish: @Right"
     )
-    p.sizing_mode = sizing_mode
+    p.sizing_mode = 'scale_height'
     p.xaxis.major_label_text_font_size = "20pt"  # HACK
     p.yaxis.major_label_text_font_size = "20pt"  # HACK
     p.xaxis[0].formatter = NumeralTickFormatter(format="0,0")
@@ -295,6 +284,6 @@ def main(
 
 if __name__ == "__main__":
     (src_file_path, dest_dir, y_axis,
-     highlight_deadline_miss, sizing_mode) = option_parser()
+     highlight_deadline_miss) = option_parser()
     main(src_file_path, dest_dir, y_axis,
-         highlight_deadline_miss, sizing_mode)
+         highlight_deadline_miss)

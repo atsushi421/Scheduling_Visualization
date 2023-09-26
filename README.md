@@ -36,8 +36,6 @@ optional arguments:
                         y_axis. ["core", "task"]
   -hdm, --highlight_deadline_miss
                         Highlight tasks in which deadline misses occurred
-  -sm SIZING_MODE, --sizing_mode SIZING_MODE
-                        Sizing Mode. ["fixed", "scale_width","scale_height", "scale_both", "stretch_both", "stretch_width", "stretch_height"]
 ```
 
 ### Input JSON format
@@ -66,20 +64,3 @@ optional arguments:
 - `// optional` と書かれている項目は記述されていなくても OK
 - "releaseTime", "deadline", "preemption" は、`--y_axis task` とした場合に、各ジョブに対して描画される
 - `"deadlineMiss": True` とした場合、`--highlight_deadline_miss` オプションを使用すると、そのジョブが赤色に描画される
-
-### モードの種類
-- fixed (default)
-  - サイズは固定され、ウィンドウのサイズ変更に影響されません。
-- scale_width
-  - 幅がコンテナの幅に合わせて変更され、アスペクト比は保たれます。
-- scale_height
-  - 高さがコンテナの高さに合わせて変更され、アスペクト比は保たれます。
-- scale_both
-  - 幅と高さがそれぞれコンテナの幅と高さに合わせて変更されます。アスペクト比は保たれません。
-- stretch_both
-  - 幅と高さがそれぞれコンテナの幅と高さに合わせて引き伸ばされます。アスペクト比は保たれません。
-  - 環境によっては表示がうまくいかないので非推奨
-- stretch_width
-  - 幅だけがコンテナの幅に合わせて引き伸ばされます。アスペクト比は保たれません。
-- stretch_height
-  - 高さだけがコンテナの高さに合わせて引き伸ばされます。アスペクト比は保たれません。
