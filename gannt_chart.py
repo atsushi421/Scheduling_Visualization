@@ -204,7 +204,7 @@ def main(
                   Start: @Left<br> \
                   Finish: @Right"
     )
-    p.sizing_mode = 'stretch_height'
+    p.sizing_mode = 'fixed'
     p.xaxis.major_label_text_font_size = "20pt"  # HACK
     p.yaxis.major_label_text_font_size = "20pt"  # HACK
     p.xaxis[0].formatter = NumeralTickFormatter(format="0,0")
