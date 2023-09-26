@@ -153,7 +153,7 @@ class QuadSourceGenerator():
             hatch_pattern = self._pattern_dict[str(sched_info["coreID"])]
             legend_label = f'Core {sched_info["coreID"]}'
 
-        if(self._highlight_deadline_miss
+        if (self._highlight_deadline_miss
            and sched_info["deadlineMiss"]):
             color = self._color_dict["deadlineMiss"]
 
@@ -186,14 +186,14 @@ def main(
         source_dict = json.load(f)
     # TODO: validate
 
-    quad_source_generater = QuadSourceGenerator(source_dict,
+    quad_source_generator = QuadSourceGenerator(source_dict,
                                                 highlight_deadline_miss,
                                                 y_axis)
 
     # preprocessing for plot
     p = figure(
         width=800,
-        y_range=quad_source_generater.get_y_axis_list(),
+        y_range=quad_source_generator.get_y_axis_list(),
         x_range=Range1d(0, source_dict["makespan"]),
         active_scroll="wheel_zoom",
         output_backend="svg",
@@ -204,7 +204,7 @@ def main(
                   Start: @Left<br> \
                   Finish: @Right"
     )
-    p.sizing_mode = 'stretch_both'
+    p.sizing_mode = 'fixed'
     p.xaxis.major_label_text_font_size = "20pt"  # HACK
     p.yaxis.major_label_text_font_size = "20pt"  # HACK
     p.xaxis[0].formatter = NumeralTickFormatter(format="0,0")
@@ -212,7 +212,7 @@ def main(
 
     # plot
     for sched_info in source_dict["taskSet"]:
-        quad_source = quad_source_generater.generate(sched_info)
+        quad_source = quad_source_generator.generate(sched_info)
         p.quad(
             source=quad_source,
             left="Left",
@@ -235,10 +235,10 @@ def main(
                         end=NormalHead(fill_color="black",
                                        line_width=1, size=6),
                         x_start=sched_info["releaseTime"],
-                        y_start=quad_source_generater.get_y_base(
+                        y_start=quad_source_generator.get_y_base(
                             sched_info["taskID"]) + 0.7,
                         x_end=sched_info["releaseTime"],
-                        y_end=quad_source_generater.get_y_base(
+                        y_end=quad_source_generator.get_y_base(
                             sched_info["taskID"]) + 1.0,
                     )
                 )
@@ -248,10 +248,10 @@ def main(
                         end=NormalHead(fill_color="black",
                                        line_width=1, size=6),
                         x_start=sched_info["deadline"],
-                        y_start=quad_source_generater.get_y_base(
+                        y_start=quad_source_generator.get_y_base(
                             sched_info["taskID"]) + 1.0,
                         x_end=sched_info["deadline"],
-                        y_end=quad_source_generater.get_y_base(
+                        y_end=quad_source_generator.get_y_base(
                             sched_info["taskID"]) + 0.7,
                     )
                 )
@@ -263,10 +263,10 @@ def main(
                         line_color="red",
                         line_width=2,
                         x_start=sched_info["finishTime"],
-                        y_start=quad_source_generater.get_y_base(
+                        y_start=quad_source_generator.get_y_base(
                             sched_info["taskID"]) + 0.7,
                         x_end=sched_info["finishTime"],
-                        y_end=quad_source_generater.get_y_base(
+                        y_end=quad_source_generator.get_y_base(
                             sched_info["taskID"]) + 1.0,
                     )
                 )
