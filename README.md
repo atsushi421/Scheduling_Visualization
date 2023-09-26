@@ -24,7 +24,7 @@ cd Scheduling_Visualization
 使い方は以下の通り。スケジューリング結果は HTML ファイルとして出力される。
 
 ```
-usage: gannt_chart.py [-h] -s SRC_FILE_PATH [-d DEST_DIR] -y Y_AXIS [-hdm] [-sm]
+usage: gannt_chart.py [-h] -s SRC_FILE_PATH [-d DEST_DIR] -y Y_AXIS [-hdm]
 
 optional arguments:
   -h, --help            show this help message and exit
