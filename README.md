@@ -24,7 +24,7 @@ cd Scheduling_Visualization
 使い方は以下の通り。スケジューリング結果は HTML ファイルとして出力される。
 
 ```
-usage: gannt_chart.py [-h] -s SRC_FILE_PATH [-d DEST_DIR] -y Y_AXIS [-hdm] [-l]
+usage: gannt_chart.py [-h] -s SRC_FILE_PATH [-d DEST_DIR] -y Y_AXIS [-hdm] [-sm]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -36,6 +36,8 @@ optional arguments:
                         y_axis. ["core", "task"]
   -hdm, --highlight_deadline_miss
                         Highlight tasks in which deadline misses occurred
+  -sm SIZING_MODE, --sizing_mode SIZING_MODE
+                        Sizing Mode. ["fixed", "scale_width","scale_height", "scale_both", "stretch_both", "stretch_width", "stretch_height"]
 ```
 
 ### Input JSON format
@@ -64,9 +66,6 @@ optional arguments:
 - `// optional` と書かれている項目は記述されていなくても OK
 - "releaseTime", "deadline", "preemption" は、`--y_axis task` とした場合に、各ジョブに対して描画される
 - `"deadlineMiss": True` とした場合、`--highlight_deadline_miss` オプションを使用すると、そのジョブが赤色に描画される
-
-## Note
-- `./gannt_chart.py`の207行目の`p.sizing_mode = 'stretch_height'`を変更することで，htmlの描画の大きさを変えることが可能
 
 ### モードの種類
 - fixed (default)
