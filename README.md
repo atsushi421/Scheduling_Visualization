@@ -24,7 +24,7 @@ cd Scheduling_Visualization
 使い方は以下の通り。スケジューリング結果は HTML ファイルとして出力される。
 
 ```
-usage: gannt_chart.py [-h] -s SRC_FILE_PATH [-d DEST_DIR] -y Y_AXIS [-hdm] [-l]
+usage: gannt_chart.py [-h] -s SRC_FILE_PATH [-d DEST_DIR] -y Y_AXIS [-hdm]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -64,6 +64,3 @@ optional arguments:
 - `// optional` と書かれている項目は記述されていなくても OK
 - "releaseTime", "deadline", "preemption" は、`--y_axis task` とした場合に、各ジョブに対して描画される
 - `"deadlineMiss": True` とした場合、`--highlight_deadline_miss` オプションを使用すると、そのジョブが赤色に描画される
-
-### NOTE
-出力結果の図を表示するウィンドウサイズによっては、画面がちらつくことがあります。その際はフルスクリーンにすれば問題なく表示できます。
