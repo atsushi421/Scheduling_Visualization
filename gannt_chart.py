@@ -180,7 +180,7 @@ def main(
     src_file_path,
     dest_dir,
     y_axis,
-    highlight_deadline_miss,
+    highlight_deadline_miss
 ) -> None:
     with open(src_file_path) as f:
         source_dict = json.load(f)
